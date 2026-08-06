@@ -1,38 +1,40 @@
+// src/config/db.js
 const Database = require('better-sqlite3');
 const path = require('path');
 
-const db = new Database(path.join(__dirname, '../../employees.db'), { verbose: console.log });
+// Open or create the database file in the project root
+const db = new Database(path.join(__dirname, '../../employee_tracker.db'));
 
+// Enforce foreign key rules
 db.pragma('foreign_keys = ON');
 
-function initDAatabase() {
-    db.exec(`
-        CREATE TABLE IF NOT EXISTS departments (
-            id INTERGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL
-            );
+function initDatabase() {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS departments (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL UNIQUE
+    );
 
-        CREATE TABLE IF NOT EXISTS roles (
-            id INTERGER PRIMARY KEY AUTOINCREMENT,
-            title TEXT NOT NULL,
-            salary REAL NOT NULL,
-            department_id INTERGER NOT NULL,
-            FOREIGN KEY (department_id) REFERENCES departments(id) ON DELETE SET NULL
-            );
-            
-        CREATE TABLE IF NOT EXISTS employees (
-            id INTERGER PRIMARY KEY AUTOINCREMENT,
-            first_name TEXT NOT NULL,
-            last_name TEXT NOT NULL,
-            role_id INTEGER,
-            manager_id INTEGER,
-            FORREIGN KEY (role_id) REFERENCES roles(id) ON DELETE SET NULL,
-            FOREIGN KEY (manager_id) REFERENCES employee(id) ON DELETE SET NULL
-            );    
+    CREATE TABLE IF NOT EXISTS roles (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL,
+      salary REAL NOT NULL,
+      department_id INTEGER,
+      FOREIGN KEY (department_id) REFERENCES departments(id) ON DELETE SET NULL
+    );
 
-        `);
+    CREATE TABLE IF NOT EXISTS employees (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      first_name TEXT NOT NULL,
+      last_name TEXT NOT NULL,
+      role_id INTEGER,
+      manager_id INTEGER,
+      FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE SET NULL,
+      FOREIGN KEY (manager_id) REFERENCES employees(id) ON DELETE SET NULL
+    );
+  `);
 
-        console.log(' SQLite database and tables created successfully');
+  console.log('⚡ SQLite database and tables initialized!');
 }
 
-module.exports = {db, initDAatabase};
+module.exports = { db, initDatabase };
