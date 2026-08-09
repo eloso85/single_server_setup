@@ -27,7 +27,7 @@ export default function EmployeeForm({ roles, onAddEmployee }) {
   };
 
   return(
-    <div className="card">
+<div className="card">
     <h2 className="section-title">Add New Employees</h2>
     <form onSubmit={handleSubmit}>
         <div className="form-group">
@@ -41,8 +41,39 @@ export default function EmployeeForm({ roles, onAddEmployee }) {
             required 
             />
         </div>
+
+        <div className="form-group">
+            <label> Last Name</label>
+            <input 
+            type="text"
+            name="last_name"
+            className="form-input"
+            value={formData.last_name}
+            onChange={handleChange}
+            required
+            />
+        </div>
+
+        <div className="form-group">
+            <label>Select Role</label>
+            <select 
+            name="role_id"
+            className="form-input"
+            value={formData.role_id}
+            onChange={handleChange}
+            required
+            >
+                <option value="">--Choose a Role--</option>
+                {roles.map((role)=>(
+                    <option key={role.id} value={formData.role_id}>
+                        {role.title} ({role.department_name || 'General'})
+                    </option>
+                ))}
+            </select>    
+        </div>
+        <button type="submit" className="btn-primary"> Save Employess</button>
     </form>
-  </div>
+</div>
 
   
   ) 
