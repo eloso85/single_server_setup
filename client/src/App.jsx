@@ -4,23 +4,36 @@ import './App.css';
 
 export default function App() {
   const [employees, setEmployees] = useState([]);
+  const [roles, setRoles] = useState([]); // Array to store SQLite roles
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Form State
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
     role_id: ''
   });
 
-  // Helper function to load data (used after form submit)
-  const loadEmployees = async () => {
+  // Fetch initial data (employees & roles)
+  const loadInitialData = async () => {
     try {
-      const res = await fetch('/api/employees');
-      if (!res.ok) throw new Error('Failed to load employees from server.');
-      const data = await res.json();
-      setEmployees(data);
+      setLoading(true);
+
+      // Fetch employees and roles in parallel
+      const [empRes, rolesRes] = await Promise.all([
+        fetch('/api/employees'),
+        fetch('/api/roles')
+      ]);
+
+      if (!empRes.ok || !rolesRes.ok) {
+        throw new Error('Failed to load initial data from server.');
+      }
+
+      const empData = await empRes.json();
+      const rolesData = await rolesRes.json();
+
+      setEmployees(empData);
+      setRoles(rolesData);
       setError(null);
     } catch (err) {
       setError(err.message);
@@ -29,35 +42,24 @@ export default function App() {
     }
   };
 
-  // 1. Initial Fetch on Component Mount
   useEffect(() => {
-    // Calling fetch directly inside the effect body avoids passing function references that trigger the linter
-    fetch('/api/employees')
-      .then((res) => {
-        if (!res.ok) throw new Error('Failed to load employees from server.');
-        return res.json();
-      })
-      .then((data) => {
-        setEmployees(data);
-        setError(null);
-      })
-      .catch((err) => {
-        setError(err.message);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    loadInitialData();
   }, []);
 
-  // 2. Handle Form Input Changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // 3. Handle Form Submission
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!formData.role_id) {
+      alert('Please select a role.');
+      return;
+    }
+
     try {
       const res = await fetch('/api/employees', {
         method: 'POST',
@@ -75,9 +77,20 @@ export default function App() {
       }
 
       setFormData({ first_name: '', last_name: '', role_id: '' });
-      
-      // Reload the table using the helper
-      loadEmployees();
+      loadInitialData(); // Refresh employee list
+    } catch (err) {
+      alert(`Error: ${err.message}`);
+    }
+  };
+
+  const handleDelete = async (id, name) => {
+    if (!window.confirm(`Are you sure you want to delete ${name}?`)) return;
+
+    try {
+      const res = await fetch(`/api/employees/${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Failed to delete employee');
+
+      setEmployees((prev) => prev.filter((emp) => emp.id !== id));
     } catch (err) {
       alert(`Error: ${err.message}`);
     }
@@ -87,7 +100,7 @@ export default function App() {
     <div className="app-container">
       <h1 className="page-header">🏢 Corporate Employee Tracker</h1>
 
-      {/* Form Card */}
+      {/* Add Employee Form Card */}
       <div className="card">
         <h2 className="section-title">Add New Employee</h2>
         <form onSubmit={handleSubmit} className="employee-form">
@@ -119,18 +132,24 @@ export default function App() {
             />
           </div>
 
+          {/* Dynamic Role Select Dropdown */}
           <div className="form-group">
-            <label htmlFor="role_id">Role ID</label>
-            <input
-              type="number"
+            <label htmlFor="role_id">Select Role</label>
+            <select
               id="role_id"
               name="role_id"
               className="form-input"
-              placeholder="1 = SE, 2 = Tech Lead"
               value={formData.role_id}
               onChange={handleChange}
               required
-            />
+            >
+              <option value="">-- Choose a Role --</option>
+              {roles.map((role) => (
+                <option key={role.id} value={role.id}>
+                  {role.title} ({role.department_name || 'General'})
+                </option>
+              ))}
+            </select>
           </div>
 
           <button type="submit" className="btn-primary">
@@ -156,12 +175,13 @@ export default function App() {
                 <th>Role</th>
                 <th>Department</th>
                 <th>Salary</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
               {employees.length === 0 ? (
                 <tr>
-                  <td colSpan="5" className="state-message">
+                  <td colSpan="6" className="state-message">
                     No employees registered yet.
                   </td>
                 </tr>
@@ -177,6 +197,14 @@ export default function App() {
                     <td>{emp.role || 'Unassigned'}</td>
                     <td>{emp.department || 'Unassigned'}</td>
                     <td>{emp.salary ? `$${emp.salary.toLocaleString()}` : 'N/A'}</td>
+                    <td>
+                      <button
+                        className="btn-danger"
+                        onClick={() => handleDelete(emp.id, `${emp.first_name} ${emp.last_name}`)}
+                      >
+                        Delete
+                      </button>
+                    </td>
                   </tr>
                 ))
               )}
