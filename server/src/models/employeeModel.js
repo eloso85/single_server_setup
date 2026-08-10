@@ -29,6 +29,11 @@ const EmployeeModel = {
 
         const info = stmt.run(firstName, lastName, roleId || null, managerId || null);
         return info.lastInsertRowid;
+    },
+
+    delete(id) {
+        const stmt = db.prepare('DELETE FROM employees WHERE id = ?');
+        return stmt.run(id);
     }
 };
 

@@ -24,7 +24,22 @@ const employeeController = {
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
+  },
+
+  deleteEmployee(req, res){
+    const { id } = req.params;
+
+    try{
+      const result = EmployeeModel.delete(id);
+
+      if (result.changes === 0) {
+        return res.status(200).json({message: 'Employee Deleted Sucessfully'})
+      }
+    }catch (err){
+      res.status(500).json({error: err.message})
+    }
   }
+
 };
 
 module.exports = employeeController;
