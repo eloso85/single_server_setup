@@ -6,6 +6,7 @@ const EmployeeModel = {
             SELECT
                 e.id,
                 e.first_name,
+                e.last_name,
                 r.title AS role,
                 r.salary,
                 d.name AS department,

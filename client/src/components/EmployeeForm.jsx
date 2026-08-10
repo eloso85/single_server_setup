@@ -5,7 +5,7 @@ export default function EmployeeForm({ roles, onAddEmployee }) {
   const [formData, setFormData] = useState({
     first_name: "",
     last_name: "",
-    role_id: "",
+    role_id: ""
   });
 
   const handleChange = (e) => {
@@ -65,7 +65,7 @@ export default function EmployeeForm({ roles, onAddEmployee }) {
             >
                 <option value="">--Choose a Role--</option>
                 {roles.map((role)=>(
-                    <option key={role.id} value={formData.role_id}>
+                    <option key={role.id} value={role.id}>
                         {role.title} ({role.department_name || 'General'})
                     </option>
                 ))}
