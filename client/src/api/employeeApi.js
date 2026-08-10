@@ -17,13 +17,15 @@ export const createEmployee = async (employeeData) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(employeeData)
     });
-    if (!res.ok) throw new Error('Failed to Create Employee');
+    if (!res.ok){ throw new Error('Failed to Create Employee')}
     return res.json();
 
 };
 
 export const deleteEmployee = async (id) => {
     const res = await fetch(`/api/employees/${id}`, {method: 'DELETE'});
-    if(!res.ok) throw new Error('Failed to Delete Employee')
-        return res.json()
+    if(!res.ok){ throw new Error('Failed to Delete Employee')}
+        // Safely parse JSON only if the server sent a response body
+  const text = await res.text();
+  return text ? JSON.parse(text) : {};
 }

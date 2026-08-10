@@ -41,15 +41,17 @@ export default function App() {
     }
   };
 
-  const handleDeleteEmployee = async (id, name) =>{
-    if (!window.confirm(`Delete ${name}`)) return;
-      try {
-        await deleteEmployee(id);
-        setEmployees((prev)=> prev.filter((emp) => emp.id !== id));
-      } catch(err){
-        alert(err.message)
-      }
+ const handleDeleteEmployee = async (id, name) => {
+  if (!window.confirm(`Delete ${name}`)) return;
+  try {
+    await deleteEmployee(id);
+    console.log('Backend deletion succeeded. Updating React state...');
+    setEmployees((prev) => prev.filter((emp) => emp.id != id));
+  } catch (err) {
+    console.error('Delete caught an error:', err);
+    alert(err.message);
   }
+};
 
   
   
